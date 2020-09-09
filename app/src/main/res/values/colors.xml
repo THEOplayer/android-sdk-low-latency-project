@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="THEOWhite">#FFFFFF</color>
+    <color name="THEOBlue">#3380FF</color>
+    <color name="THEOGray">#393939</color>
+    <color name="THEOYellow">#FFC41C</color>
+    <color name="THEOYellowAlt">#FFB400</color>
+</resources>
