@@ -10,8 +10,8 @@
     <string name="pauseIcon">&#xf04c;</string>
     <string name="volumeUp">&#xf028;</string>
     <string name="volumeDown">&#xf027;</string>
-    <string name="forward">&#xf04e;</string>
-    <string name="backward">&#xf04a;</string>
+    <string name="forward">&#xf067;</string>
+    <string name="backward">&#xf068;</string>
     <string name="skipF">&#xf051;</string>
     <string name="skipB">&#xf048;</string>
     <string name="cc">&#xf20a;</string>

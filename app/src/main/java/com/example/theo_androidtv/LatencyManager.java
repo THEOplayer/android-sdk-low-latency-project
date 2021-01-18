@@ -47,6 +47,15 @@ public class LatencyManager {
         return _latency;
     }
 
+
+    public int getCurrentLatency(){
+        if (_latency != null){
+            return  _latency.getCurrentLatency();
+        }
+        else
+            return 0;
+    }
+
     private LatencyManagerConfiguration configuration;
 
     public void setConfiguration(LatencyManagerConfiguration cfg) {
@@ -55,7 +64,10 @@ public class LatencyManager {
     }
 
     public int getTargetLatency() {
-        return this.configuration.getTargetLatency();
+        if(this.configuration != null) {
+            return this.configuration.getTargetLatency();
+        }
+        return 0;
 
     }
 

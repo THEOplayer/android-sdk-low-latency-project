@@ -159,10 +159,10 @@ public class PlayerActivity extends Activity {
         });
 
         // Skipping forward by SKIP_FORWARD_SECS seconds
-        viewBinding.forwardBtn.setOnClickListener(view -> player.setCurrentTime(currentTime + SKIP_FORWARD_SECS));
+        viewBinding.forwardBtn.setOnClickListener(view ->  this.increaseLatency() );
 
         // Skipping backward by SKIP_BACKWARD_SECS seconds
-        viewBinding.backwardBtn.setOnClickListener(view -> player.setCurrentTime(currentTime - SKIP_BACKWARD_SECS));
+        viewBinding.backwardBtn.setOnClickListener(view -> this.decreaseLatency());
 
 
         // Setting faster playback rate based on the playbackrates array
@@ -301,6 +301,22 @@ public class PlayerActivity extends Activity {
         timeout.postDelayed(r, INACTIVITY_SECONDS * 1000);
     }
 
+    private void increaseLatency(){
+        int target = this.latencyManager.getTargetLatency();
+        if(target > 1000){
+            target += 100;
+            latencyManager.setTargetLatency(target);
+        }
+    }
+
+    private void decreaseLatency(){
+        int target = this.latencyManager.getTargetLatency();
+        if(target > 1000){
+            target -= 100;
+            latencyManager.setTargetLatency(target);
+        }
+
+    }
 
     private void configureTheoPlayer() {
         // Creating a TypedSource builder that defines the location of a single stream source
@@ -327,13 +343,13 @@ public class PlayerActivity extends Activity {
 
         //Intialise the Latency Manager Configuration
         LatencyManagerConfiguration config = new LatencyManagerConfigurationBuilder()
-                .targetLatency(2000)
+                .targetLatency(2500)  //player attempts to achieve this latency in miliseconds
                 .timeServer(typedSource.getTimeServer())
-                .interval(200)
-                .fireUpdate(true)
-                .latencyWindow(100)
-                .rateChange(0.08)
-                .seekWindow(1000)
+                .interval(200)  //how often latency is evaluated in miliseconds
+                .fireUpdate(true)  //manager hould send updates to java runtime
+                .latencyWindow(100)  // accpetable deviation from configured latency in miliseconds
+                .rateChange(0.08)   //playbackrate to apply is target latency is not achieved
+                .seekWindow(2000)  //seekwindow forces player to seek if targetlatency is beyound this value , rather than playbackrate
                 .sync(true).build();
 
         //Intialise the Latency Manager with the defined config
@@ -342,7 +358,7 @@ public class PlayerActivity extends Activity {
 
 
         //Setting the Autoplay to true
-        player.setAutoplay(false);
+        player.setAutoplay(true);
 
         //Playing the source in the FullScreen Landscape mode
         viewBinding.theoPlayerView.getSettings().setFullScreenOrientationCoupled(true);
@@ -358,12 +374,7 @@ public class PlayerActivity extends Activity {
             viewBinding.playPauseBtn.setText(getString(R.string.pauseIcon));
         });
 
-        player.addEventListener(PlayerEventTypes.TIMEUPDATE, timeUpdateEvent -> {
-            if(latencyManager.getLatency() != null) {
-                Log.i("LATENCY:", String.valueOf(latencyManager.getLatency().getCurrentLatency()));
-            }
 
-        });
         player.addEventListener(PlayerEventTypes.PAUSE, pauseEvent -> viewBinding.playPauseBtn.setText(getString(R.string.playIcon)));
         player.addEventListener(PlayerEventTypes.ERROR, pauseEvent -> viewBinding.playPauseBtn.setText(getString(R.string.playIcon)));
 
@@ -385,10 +396,12 @@ public class PlayerActivity extends Activity {
         player.addEventListener(PlayerEventTypes.TIMEUPDATE, timeUpdateEvent -> {
             currentTime = timeUpdateEvent.getCurrentTime();
             boolean isLive = Double.isNaN(player.getDuration());
-            String text;
+            String text = "";
+            String targetText = "";
             if (isLive) {
                 // If live stream, only show current time
-                text = getString(R.string.live) + " " + formatTime((int) currentTime);
+                text =   String.format("Current Latency: %04d ms", latencyManager.getCurrentLatency()) ;// getString(R.string.live) + " " + formatTime((int) currentTime);
+                targetText =   String.format("Target Latency: %04d ms", latencyManager.getTargetLatency()) ;// getString(R.string.live) + " " + formatTime((int) currentTime);
                 viewBinding.progress.setProgress(100);
             } else {
                 double duration = player.getDuration();
@@ -396,18 +409,18 @@ public class PlayerActivity extends Activity {
                 text = formatTime((int) currentTime) + getString(R.string.timeProgressSeparator) + formatTime((int) duration);
                 viewBinding.progress.setProgress(progress);
             }
+            viewBinding.textLatency.setText(text);
             viewBinding.time.setText(text);
+            viewBinding.target.setText(targetText);
 
             if (player.getVideoTracks().length() > 0) {
                 VideoQuality activeQuality = player.getVideoTracks().getItem(0).getActiveQuality();
                 if (activeQuality != null) {
-                    Log.i(TAG, "Event: activeQuality:" + activeQuality.getWidth() + "x" + activeQuality.getHeight());
+                   // Log.i(TAG, "Event: activeQuality:" + activeQuality.getWidth() + "x" + activeQuality.getHeight());
 
                 }
             }
         });
-
-
     }
 
         @Override

@@ -21,6 +21,7 @@
             this.timeserver = timeserverUri;
 
 
+
         this.listeners = [];
         this.addEventListener = function(type, callback) {
             if (!(type in this.listeners)) {
@@ -47,7 +48,6 @@
                 return true;
             }
             var stack = this.listeners[event.type].slice();
-
             for (var i = 0, l = stack.length; i < l; i++) {
                 stack[i].call(this, event);
             }
@@ -99,7 +99,6 @@
         this.getServerTime = function() {
             return new Date(Date.now() + this.latency);
         }
-
     }
 
 
@@ -147,7 +146,10 @@
         this._lastSeek = new Date();
         //seektimeout is used in combination with _lastseek
         //manager will not issue more than 1 seek command per _seekTimeout (in ms)
-        this._seekTimeOut = 1000;
+        this.SEEKTIMEOUT = 3000;
+
+
+
         this.currenthigh = 0;
         this.currentlow = 0;
         this.seekhigh = 0;
@@ -155,6 +157,8 @@
         this.pgdtrequest = 0;
         this.disableOnPause = false;
         this.sync = true;
+
+
         //additional fix to compensate for encoder/packager latency
         this.encoderlatency = 0;
         this.currentpackagerlatency = 0;
@@ -162,7 +166,16 @@
         this.currentencoderlatency = 0;
         this.encodertime = 0;
         this.useencodertime = false;
-        this.SEEKTIMEOUT = 2000;
+
+
+
+        this.playerTimeUpdate = function(e){
+            this.sendupdate();
+        }.bind(this);
+        this.player.addEventListener('timeupdate', this.playerTimeUpdate);
+
+
+
         this.isSynced = function() {
             return this.currentLow <= this.currentlatency &&
                 this.currentlatency < this.currentHigh;
@@ -218,7 +231,7 @@
                     this._setpbr(1);
                 }
 
-                this.sendupdate();
+                //this.sendupdate();
             }
 
             if (this._started)
@@ -245,9 +258,21 @@
         this._lastSeek = 0;
         //seek to a specific time
         this._seekTo = function(time) {
+            //console.log('latencymanager._seekTo: try seek to: ', time);
+
+            if(this.player.seekable.end.length == 0){
+                //console.log('latencymanager._seekTo FALSE: nog seekable ranges');
+                return false;
+            }
+
+            var end = this.player.seekable.end(this.player.seekable.end.length - 1);
+            if( end <    time){
+                    //console.log('latencymanager._seekTo FALSE: seekable end:' , end,' <  time:', time);
+                    return false;
+            }
+
 
             var currentSeek = new Date().getTime();
-
             if (!this.player.seeking && (currentSeek - this._lastSeek) > this.SEEKTIMEOUT) {
                 this._lastSeek = new Date().getTime();
                 this.player.currentTime = time;
@@ -296,6 +321,7 @@
 
         //start the manager
         this.start = function() {
+            this._lastSeek = new Date().getTime();
             if (!this._started) {
                 this._started = true;
                 this._timeout = setTimeout(this.update, this.interval);
@@ -319,7 +345,6 @@
             if (typeof config === "string")
                 config = JSON.parse(config);
 
-
             this.targetlatency = config.targetlatency || 5000;
             this.latencywindow = config.latencywindow || 250;
             this.seekwindow = config.seekwindow || 5000;
@@ -330,7 +355,6 @@
             this.sync = config.sync || true;
             this.encoderlatency = config.encoderlatency || 0;
             this.useencodertime = config.useencodertime || false;
-
 
             if (THEOplayer.timeServer && (THEOplayer.timeServer.timeserver !== config.timeserver)) {
                 THEOplayer.timeServer.timeserver = config.timeserver;
@@ -448,6 +472,7 @@
             THEOplayer.latencyManager.stop();
             THEOplayer.playingcount = 0;
         });
+        return THEOplayer.latencyManager;
     }
 
 }());

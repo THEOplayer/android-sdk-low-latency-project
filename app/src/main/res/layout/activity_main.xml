@@ -58,7 +58,8 @@
                 android:layout_height="wrap_content"
                 android:width="@dimen/iconSize"
                 android:height="@dimen/iconSize"
-                android:text="@string/skipB" />
+                android:text="@string/skipB"
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/ffwdBtn"
@@ -66,7 +67,8 @@
                 android:layout_height="wrap_content"
                 android:width="@dimen/iconSize"
                 android:height="@dimen/iconSize"
-                android:text="@string/skipF" />
+                android:text="@string/skipF"
+                android:visibility="gone" />
 
 
             <Button
@@ -115,7 +117,10 @@
                     android:max="100"
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
-                    android:progress="0">
+                    android:progress="0"
+                    android:visibility="gone"
+                    >
+
 
                 </ProgressBar>
 
@@ -127,8 +132,31 @@
                     android:layout_marginTop="1dp"
                     android:text=""
                     android:textSize="12dp"></TextView>
+                <TextView
+                    android:id="@+id/target"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="1dp"
+                    android:text=""
+                    android:textSize="12dp"></TextView>
             </LinearLayout>
 
         </LinearLayout>
+
+        <TextView
+
+
+            android:id="@+id/textLatency"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_gravity="top|right"
+            android:background="#CDFDFCFC"
+            android:gravity="right"
+            android:padding="5dp"
+            android:text="Latency: 2000ms"
+            android:textAlignment="textEnd"
+            android:textSize="18sp"
+            android:textStyle="bold" />
     </FrameLayout>
 </layout>
